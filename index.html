@@ -4,20 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audiomax Player</title>
+    <title>Bookava Player</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #8B5CF6;
-            /* A nice purple for the main accent */
             --primary-hover-color: #7C3AED;
-            --background-color: #1d2b3a;
-            --surface-color: #2a3447;
+            --primary-glow-color: rgba(139, 92, 246, 0.5);
+            --background-color: #1a1b26;
+            --surface-color: #24253a;
             --text-color: #f5f5f7;
             --text-muted-color: #a0aec0;
-            --border-color: rgba(255, 255, 255, 0.12);
+            --border-color: rgba(255, 255, 255, 0.1);
             --error-color: #EF4444;
 
             --border-radius-lg: 24px;
@@ -41,11 +41,10 @@
 
         .container {
             width: 100%;
-            max-width: 400px;
-            /* Increased max-width */
+            max-width: 420px;
             background: var(--surface-color);
             border-radius: var(--border-radius-lg);
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
             border: 1px solid var(--border-color);
             transition: background-color var(--transition-speed);
             overflow: hidden;
@@ -55,18 +54,22 @@
         /* --- NOTIFICATION --- */
         #notification {
             position: absolute;
-            top: 0;
+            top: 1.5rem;
             left: 1.5rem;
             right: 1.5rem;
             background-color: var(--primary-color);
             color: white;
             padding: 1rem;
-            border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+            border-radius: var(--border-radius-md);
             text-align: center;
             font-weight: 600;
-            transform: translateY(-120%);
+            transform: translateY(-150%);
             transition: transform 0.4s ease-in-out;
             z-index: 150;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
         #notification.show {
@@ -77,9 +80,15 @@
             background-color: var(--error-color);
         }
 
+        #notification svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
         /* --- VIEW TRANSITIONS --- */
         .view {
-            transition: opacity var(--transition-speed), visibility var(--transition-speed);
+            transition: opacity var(--transition-speed) ease-in-out, visibility var(--transition-speed) ease-in-out;
         }
 
         .view:not(.visible) {
@@ -97,7 +106,7 @@
 
         /* UPLOAD SECTION */
         .upload-section {
-            padding: 2.5rem;
+            padding: 2rem 2.5rem 2.5rem;
         }
 
         .upload-header {
@@ -105,15 +114,16 @@
         }
 
         .upload-header h1 {
-            margin: 0 0 0.5rem;
-            font-size: 2.5rem;
+            margin: 0 0 0.25rem;
+            font-size: 3rem;
             font-weight: 700;
+            letter-spacing: -1.5px;
         }
 
         .upload-header p {
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
             color: var(--text-muted-color);
-            font-size: 1rem;
+            font-size: 1.1rem;
         }
 
         .upload-drop-zone {
@@ -127,12 +137,13 @@
             padding: 2.5rem;
             border: 2px dashed var(--border-color);
             border-radius: var(--border-radius-md);
-            transition: all 0.2s ease-in-out;
+            transition: all 0.3s ease-in-out;
         }
 
         .upload-drop-zone.dragover {
             border-color: var(--primary-color);
             background-color: rgba(139, 92, 246, 0.1);
+            transform: scale(1.02);
         }
 
         .upload-drop-zone svg {
@@ -140,6 +151,10 @@
             height: 48px;
             margin-bottom: 1rem;
             fill: var(--primary-color);
+            transition: transform 0.3s ease-in-out;
+        }
+        .upload-drop-zone:hover svg {
+            transform: scale(1.1);
         }
 
         .upload-drop-zone span {
@@ -149,7 +164,7 @@
         }
 
         .upload-drop-zone .subtext {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             color: var(--text-muted-color);
             margin-top: 0.25rem;
         }
@@ -169,9 +184,10 @@
             display: none;
         }
 
-        /* HISTORY SECTION */
+        /* --- BOOKSHELF (HISTORY) SECTION --- */
         .history-section {
-            margin-top: 2.5rem;
+            margin-top: 3rem;
+            perspective: 1000px; /* Add perspective for 3D effects */
         }
 
         .history-section h2 {
@@ -179,94 +195,157 @@
             font-weight: 600;
             color: var(--text-muted-color);
             text-align: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
         }
 
         .history-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 2rem 1.5rem;
             justify-items: center;
         }
 
         .history-item {
-            width: 90px;
-            height: 90px;
+            width: 110px;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        .history-item:hover {
+            transform: translateY(-10px);
+        }
+        .history-item:hover .history-item-artwork{
+             transform: rotateY(8deg) rotateX(2deg) scale(1.08);
+             box-shadow: 0 18px 35px rgba(0,0,0,0.3), 0 0 20px -5px var(--primary-glow-color);
+        }
+
+        .history-item-remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 28px;
+            height: 28px;
+            background: var(--error-color);
+            border: 2px solid var(--surface-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.2s ease-in-out;
+        }
+        .history-item:hover .history-item-remove-btn {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .history-item-remove-btn:hover {
+             transform: scale(1.1) !important;
+             background: #f87171;
+        }
+
+        .history-item-remove-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: white;
+            stroke-width: 2.5;
+        }
+
+
+        .history-item-artwork {
+            width: 100%;
+            height: 150px;
             border-radius: var(--border-radius-md);
-            background-color: rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(45deg, #2f3046, #2a2b3f);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
+            margin-bottom: 0.85rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
         }
-
         .history-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
+        .history-item-artwork .artwork-icon {
+            width: 40%;
+            height: 40%;
+            fill: var(--text-muted-color);
+            opacity: 0.3;
+        }
 
         .history-item .title {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(2px);
-            color: white;
-            font-size: 0.7rem;
-            padding: 4px 6px;
-            text-align: center;
-            white-space: nowrap;
+            color: var(--text-color);
+            font-size: 0.85rem;
+            font-weight: 500;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
+            transition: color 0.3s;
         }
+        .history-item:hover .title {
+            color: var(--primary-color);
+        }
+
 
         /* PLAYER SECTION */
         .player-header {
             display: flex;
             align-items: center;
-            padding: 0.8rem 1rem 0;
+            justify-content: space-between;
+            padding: 1rem 1.5rem 0.5rem;
         }
 
         .player-header button {
             background: none;
             border: none;
             cursor: pointer;
-            opacity: 0.7;
-            transition: opacity 0.2s;
+            opacity: 0.8;
+            transition: opacity 0.2s, transform 0.2s;
             padding: 0.5rem;
         }
 
         .player-header button:hover {
             opacity: 1;
+            transform: scale(1.1);
         }
 
         .player-header button svg {
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             fill: var(--text-color);
         }
 
         .main-player {
-            padding: 0 2rem 1.5rem;
+            padding: 0 2.5rem 1.5rem;
+            text-align: center;
         }
 
         #artwork-placeholder {
-            width: 75%;
-            max-width: 240px;
+            width: 100%;
+            max-width: 260px;
             aspect-ratio: 1 / 1;
-            margin: 0.5rem auto 1.5rem;
-            background: rgba(255, 255, 255, 0.05);
+            margin: 1rem auto 2rem;
+            background: linear-gradient(45deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
             border-radius: var(--border-radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
         }
 
         #artwork-placeholder img {
@@ -279,28 +358,56 @@
         #artwork-placeholder svg {
             width: 60px;
             height: 60px;
-            opacity: 0.5;
+            opacity: 0.3;
             fill: var(--text-color);
         }
 
         #current-track {
-            text-align: center;
-            font-size: 1.4rem;
-            font-weight: 600;
+            font-size: 1.5rem;
+            font-weight: 700;
             margin-bottom: 0.5rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
+        #current-album {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-muted-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-container {
+            position: relative;
+            margin: 1rem 0;
+        }
+
         .time-display {
             display: flex;
             justify-content: space-between;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 500;
             color: var(--text-muted-color);
-            margin: 0.5rem 0 1.5rem;
+            margin: 0.75rem 0 1.5rem;
         }
+
+        #progress-tooltip {
+            position: absolute;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            bottom: 35px;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            z-index: 10;
+        }
+
 
         input[type="range"] {
             -webkit-appearance: none;
@@ -311,7 +418,7 @@
             border-radius: 3px;
             outline: none;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: height 0.2s;
         }
 
         input[type="range"]:hover {
@@ -326,11 +433,19 @@
             background: var(--primary-color);
             border-radius: 50%;
             border: 2px solid var(--surface-color);
+            box-shadow: 0 0 5px var(--primary-glow-color);
+            transition: transform 0.2s;
+        }
+        input[type="range"]:hover::-webkit-slider-thumb {
+            transform: scale(1.1);
         }
 
         .playback-controls {
-            text-align: center;
-            margin: 1.5rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
         }
 
         .playback-controls button {
@@ -343,83 +458,178 @@
             place-items: center;
             cursor: pointer;
             transition: all 0.2s;
-            vertical-align: middle;
+            color: var(--text-muted-color);
+        }
+        .playback-controls button:hover:not(:disabled) {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: var(--text-color);
+        }
+        .playback-controls button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
 
         .playback-controls button svg {
-            fill: var(--text-color);
+            fill: currentColor;
             transition: fill 0.2s;
         }
 
-        .playback-controls button:hover:not(:disabled) {
-            background-color: rgba(255, 255, 255, 0.05);
+        .seek-btn {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
         }
 
         #play-pause-btn {
             width: 70px;
             height: 70px;
             background-color: var(--primary-color);
-            margin: 0 1rem;
+            color: white;
         }
 
         #play-pause-btn:hover {
             background-color: var(--primary-hover-color);
+            transform: scale(1.05);
         }
 
         #play-pause-btn svg {
-            fill: white;
             width: 32px;
             height: 32px;
+            transform: translateX(1px); /* Optical alignment for play icon */
+        }
+        #play-pause-btn .pause-icon svg {
+             transform: translateX(0px);
         }
 
-        #prev-btn svg,
-        #next-btn svg {
-            width: 28px;
-            height: 28px;
+        #prev-btn svg, #next-btn svg {
+            width: 32px;
+            height: 32px;
         }
 
         .speed-control-group {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.8rem;
-            margin-top: 1rem;
+            gap: 0.75rem; /* Adjusted gap */
+            margin-top: 1.5rem;
         }
 
         .speed-btn {
+            font-family: 'Inter', sans-serif;
             font-size: 1.4rem;
             line-height: 1;
             font-weight: bold;
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            border: 1px solid var(--border-color);
+            border: 2px solid var(--border-color);
             background: transparent;
             color: var(--text-muted-color);
             cursor: pointer;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
         }
+        #auto-speed-btn.active {
+             border-color: var(--primary-color);
+             color: var(--primary-color);
+             background: rgba(139, 92, 246, 0.1);
+        }
+
 
         .speed-btn:disabled {
             opacity: 0.4;
             cursor: not-allowed;
         }
 
-        .speed-btn:hover:not(:disabled) {
+        .speed-btn:not(#auto-speed-btn):hover:not(:disabled) {
             background: var(--primary-color);
             color: white;
             border-color: var(--primary-color);
+        }
+         #auto-speed-btn:hover:not(:disabled) {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: rgba(139, 92, 246, 0.15);
         }
 
         #speed-label {
             text-align: center;
             font-weight: 600;
-            font-size: 1.1rem;
-            min-width: 60px;
+            font-size: 1.2rem;
+            min-width: 70px; /* Wider to accommodate 'auto' */
+        }
+         #speed-label .auto-indicator {
+             font-size: 0.8rem;
+             font-weight: 500;
+             color: var(--primary-color);
+             display: block;
+         }
+
+
+        .total-time-info {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted-color);
+            margin-top: 1rem;
+            height: 1em;
         }
 
+        .bottom-controls {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0.5rem 1.5rem 1rem;
+        }
+
+        .volume-control-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #volume-btn {
+             background: none;
+             border: none;
+             padding: 0.5rem;
+             cursor: pointer;
+             opacity: 0.8;
+             transition: opacity 0.2s, transform 0.2s;
+        }
+        #volume-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        #volume-btn svg {
+            width: 28px;
+            height: 28px;
+            fill: var(--text-color);
+        }
+
+        #volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 5px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        #volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--text-color);
+            border-radius: 50%;
+        }
+
+
         .playlist-section {
-            max-height: 220px;
+            max-height: 250px;
             overflow-y: auto;
             border-top: 1px solid var(--border-color);
         }
@@ -449,8 +659,8 @@
         }
 
         #playlist li.active {
-            background-color: rgba(139, 92, 246, 0.08);
-            color: var(--text-color);
+            background-color: rgba(139, 92, 246, 0.15);
+            color: var(--primary-color);
         }
 
         .playlist-track-info {
@@ -527,15 +737,15 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
             display: flex;
             justify-content: center;
             align-items: center;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s;
-            z-index: 100;
+            transition: all 0.3s ease-in-out;
+            z-index: 1000;
         }
 
         .modal-overlay.visible {
@@ -548,22 +758,27 @@
             border-radius: var(--border-radius-lg);
             padding: 2rem;
             text-align: center;
-            max-width: 320px;
-            transform: scale(0.9);
-            transition: all 0.3s;
+            max-width: 340px;
+            width: 90%;
+            transform: scale(0.95) translateY(20px);
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
         }
 
         .modal-overlay.visible .modal-content {
-            transform: scale(1);
+            transform: scale(1) translateY(0);
         }
 
         .modal-content h3 {
             margin-top: 0;
+            font-size: 1.5rem;
         }
 
         .modal-content p {
             color: var(--text-muted-color);
             margin-bottom: 2rem;
+            line-height: 1.6;
         }
 
         .modal-buttons {
@@ -575,25 +790,25 @@
             flex: 1;
             padding: 0.8rem;
             font-weight: 600;
+            font-size: 1rem;
             cursor: pointer;
             border-radius: var(--border-radius-md);
             transition: all 0.2s;
+            border: none;
         }
 
         .modal-buttons .modal-secondary-btn {
-            background: transparent;
-            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.08);
             color: var(--text-color);
         }
 
         .modal-buttons .modal-secondary-btn:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .modal-buttons .modal-primary-btn {
             background: var(--primary-color);
             color: white;
-            border: none;
         }
 
         .modal-buttons .modal-primary-btn:hover {
@@ -615,21 +830,18 @@
         <!-- UPLOAD VIEW -->
         <div class="upload-section view visible" id="upload-section">
             <div class="upload-header">
-                <h1>Audiomax</h1>
-                <p>Listen at your own pace.</p>
+                <h1>Bookava</h1>
+                <p>Your personal audiobook player.</p>
             </div>
             <label for="file-input" class="upload-drop-zone" id="upload-drop-zone">
-                <svg viewBox="0 0 24 24">
-                    <path
-                        d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
-                </svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" /></svg>
                 <span>Choose Audiobook</span>
-                <span class="subtext">Click or drag & drop a .zip or audio file</span>
+                <span class="subtext">Drop a .zip or audio files here</span>
             </label>
-            <input type="file" id="file-input" accept=".zip,.mp3,.wav,.ogg,.m4a,.flac">
+            <input type="file" id="file-input" accept=".zip,.mp3,.wav,.ogg,.m4a,.flac" multiple>
             <div class="loader" id="loader"></div>
             <div class="history-section" id="history-section">
-                <h2>Recently Played</h2>
+                <h2>Bookshelf</h2>
                 <div class="history-grid" id="history-grid">
                     <!-- History items will be injected here -->
                 </div>
@@ -639,19 +851,21 @@
         <!-- PLAYER VIEW -->
         <div class="player-section view" id="player-section">
             <div class="player-header">
-                <button id="back-btn" title="Back to Upload">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-                    </svg>
+                <button id="back-btn" title="Back to Bookshelf">
+                    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
                 </button>
+                 <div class="volume-control-container">
+                    <button id="volume-btn" title="Volume"></button>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1" />
+                </div>
             </div>
             <div class="main-player">
-                <div id="artwork-placeholder">
-                    <!-- Artwork img or placeholder svg will be injected here -->
-                </div>
+                <div id="artwork-placeholder"></div>
                 <h2 id="current-track">Track Title</h2>
+                <h3 id="current-album">Album Title</h3>
 
                 <div class="progress-container">
+                    <div id="progress-tooltip">0:00</div>
                     <input type="range" id="progress-bar" value="0" step="0.1">
                     <div class="time-display">
                         <span id="current-time">0:00</span>
@@ -660,20 +874,25 @@
                 </div>
 
                 <div class="playback-controls">
-                    <button id="prev-btn" title="Previous"><svg viewBox="0 0 24 24">
-                            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
-                        </svg></button>
+                     <button id="rewind-btn" class="seek-btn" title="Rewind 15s">-15s</button>
+                    <button id="prev-btn" title="Previous"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
                     <button id="play-pause-btn" title="Play/Pause"></button>
-                    <button id="next-btn" title="Next"><svg viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7zM18 6h-2v12h2z" />
-                        </svg></button>
+                    <button id="next-btn" title="Next"><svg viewBox="0 0 24 24"><path d="M6 5v14l11-7zM18 6h-2v12h2z"/></svg></button>
+                     <button id="forward-btn" class="seek-btn" title="Forward 15s">+15s</button>
                 </div>
 
                 <div class="speed-control-group">
                     <button id="speed-down-btn" class="speed-btn" title="Decrease Speed">-</button>
                     <span id="speed-label">1.0x</span>
                     <button id="speed-up-btn" class="speed-btn" title="Increase Speed">+</button>
+                    <button id="auto-speed-btn" class="speed-btn" title="Auto-speed (+0.1x / 10min)">
+                        <svg viewBox="0 0 24 24" fill="currentColor" style="width: 22px; height: 22px; pointer-events: none;">
+                            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                        </svg>
+                    </button>
                 </div>
+                <div id="total-time-info" class="total-time-info"></div>
+
             </div>
 
             <div class="playlist-section">
@@ -685,8 +904,8 @@
     <!-- RESUME MODAL -->
     <div class="modal-overlay" id="resume-modal">
         <div class="modal-content">
-            <h3>Resume Playback?</h3>
-            <p>We found a saved session. Would you like to continue from where you left off?</p>
+            <h3>Welcome Back!</h3>
+            <p>Continue your listening session for <strong id="resume-title">this audiobook</strong> from where you left off?</p>
             <div class="modal-buttons">
                 <button class="modal-secondary-btn" id="resume-no">Start Over</button>
                 <button class="modal-primary-btn" id="resume-yes">Yes, Resume</button>
@@ -694,9 +913,23 @@
         </div>
     </div>
 
+    <!-- HISTORY LOAD MODAL -->
+    <div class="modal-overlay" id="history-load-modal">
+        <div class="modal-content">
+            <h3>Load from Bookshelf</h3>
+            <p>To continue listening, please re-select the original audiobook file(s). Your browser's security settings require this confirmation.</p>
+            <div class="modal-buttons">
+                <button class="modal-secondary-btn" id="history-load-cancel">Cancel</button>
+                <button class="modal-primary-btn" id="history-load-select">Select File(s)</button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- Libraries -->
     <script src="https://unpkg.com/@zip.js/zip.js/dist/zip-full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -708,59 +941,117 @@
                 playerSection: document.getElementById('player-section'),
                 loader: document.getElementById('loader'),
                 currentTrackEl: document.getElementById('current-track'),
+                currentAlbumEl: document.getElementById('current-album'),
                 playPauseBtn: document.getElementById('play-pause-btn'),
+                rewindBtn: document.getElementById('rewind-btn'),
+                forwardBtn: document.getElementById('forward-btn'),
                 prevBtn: document.getElementById('prev-btn'),
                 nextBtn: document.getElementById('next-btn'),
                 progressBar: document.getElementById('progress-bar'),
+                progressTooltip: document.getElementById('progress-tooltip'),
                 currentTimeEl: document.getElementById('current-time'),
                 totalDurationEl: document.getElementById('total-duration'),
                 speedLabel: document.getElementById('speed-label'),
                 speedDownBtn: document.getElementById('speed-down-btn'),
                 speedUpBtn: document.getElementById('speed-up-btn'),
+                autoSpeedBtn: document.getElementById('auto-speed-btn'),
                 playlistEl: document.getElementById('playlist'),
                 artworkPlaceholder: document.getElementById('artwork-placeholder'),
                 resumeModal: document.getElementById('resume-modal'),
+                resumeTitle: document.getElementById('resume-title'),
                 resumeYesBtn: document.getElementById('resume-yes'),
                 resumeNoBtn: document.getElementById('resume-no'),
                 historyGrid: document.getElementById('history-grid'),
                 historySection: document.getElementById('history-section'),
+                historyLoadModal: document.getElementById('history-load-modal'),
+                historyLoadCancel: document.getElementById('history-load-cancel'),
+                historyLoadSelect: document.getElementById('history-load-select'),
                 notification: document.getElementById('notification'),
+                volumeBtn: document.getElementById('volume-btn'),
+                volumeSlider: document.getElementById('volume-slider'),
+                totalTimeInfo: document.getElementById('total-time-info')
             };
 
             const audio = new Audio();
             let playlistFiles = [];
             let currentTrackIndex = 0;
-            let currentArchiveId = null;
+            let currentBookId = null;
+            let pendingBookIdFromHistory = null;
             let saveInterval = null;
             let overallBookTitle = 'Untitled Audiobook';
             let overallBookArtwork = null;
+            let totalPlaylistDuration = 0;
+            let autoSpeedActive = false;
+            let autoSpeedIntervalId = null;
 
             const SPEED_MIN = 0.5,
-                SPEED_MAX = 16.0,
+                SPEED_MAX = 16.0, // Increased max speed
                 SPEED_INCREMENT = 0.1;
-            const HISTORY_KEY = 'audiomax_history';
+            const AUTO_SPEED_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+            const AUTO_SPEED_INCREMENT = 0.1;
+
+            const HISTORY_KEY = 'bookava_history_v4'; // Incremented version
             const MAX_HISTORY_ITEMS = 6;
 
-            const playIcon = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
-            const pauseIcon = `<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-            const artworkIcon = `<svg viewBox="0 0 24 24"><path d="M6 22h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2zm6-14c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z" /></svg>`;
+            const playIcon = `<svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+            const pauseIcon = `<svg class="pause-icon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+            const artworkIcon = `<svg class="artwork-icon" viewBox="0 0 24 24"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14 6 17h12l-3.86-5.14z"/></svg>`;
+            const volumeIcons = {
+                high: `<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`,
+                low: `<svg viewBox="0 0 24 24"><path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/></svg>`,
+                muted: `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>`,
+            };
+            const notificationIcons = {
+                info: `<svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>`,
+                error: `<svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>`,
+            }
+
 
             const setupEventListeners = () => {
                 dom.fileInput.addEventListener('change', (e) => handleFileUpload(e.target.files));
                 dom.backBtn.addEventListener('click', goBackToUpload);
                 dom.playPauseBtn.addEventListener('click', togglePlayPause);
+                dom.rewindBtn.addEventListener('click', () => seekRelative(-15));
+                dom.forwardBtn.addEventListener('click', () => seekRelative(15));
                 dom.prevBtn.addEventListener('click', playPrevious);
                 dom.nextBtn.addEventListener('click', playNext);
                 dom.speedDownBtn.addEventListener('click', () => changeSpeed(-SPEED_INCREMENT));
                 dom.speedUpBtn.addEventListener('click', () => changeSpeed(SPEED_INCREMENT));
+                dom.autoSpeedBtn.addEventListener('click', toggleAutoSpeed);
                 dom.progressBar.addEventListener('input', setSeek);
+                dom.progressBar.addEventListener('mousemove', updateProgressTooltip);
+                dom.progressBar.addEventListener('mouseenter', () => dom.progressTooltip.style.opacity = '1');
+                dom.progressBar.addEventListener('mouseleave', () => dom.progressTooltip.style.opacity = '0');
+
                 audio.addEventListener('timeupdate', updateProgress);
                 audio.addEventListener('loadedmetadata', handleTrackMetadata);
                 audio.addEventListener('ended', playNext);
-                audio.onplay = () => dom.playPauseBtn.innerHTML = pauseIcon;
+                audio.addEventListener('volumechange', updateVolumeUI);
+                dom.volumeSlider.addEventListener('input', () => {
+                    audio.muted = false;
+                    audio.volume = dom.volumeSlider.value
+                });
+                dom.volumeBtn.addEventListener('click', toggleMute);
+
+                // History load modal
+                dom.historyLoadCancel.addEventListener('click', () => {
+                    dom.historyLoadModal.classList.remove('visible');
+                    pendingBookIdFromHistory = null;
+                });
+                dom.historyLoadSelect.addEventListener('click', () => {
+                    dom.historyLoadModal.classList.remove('visible');
+                    dom.fileInput.click();
+                });
+
+
+                audio.onplay = () => {
+                    dom.playPauseBtn.innerHTML = pauseIcon;
+                    if (autoSpeedActive) startAutoSpeed();
+                };
                 audio.onpause = () => {
                     dom.playPauseBtn.innerHTML = playIcon;
                     saveState(); // Save state on pause
+                    stopAutoSpeed();
                 };
                 window.addEventListener('beforeunload', saveState);
 
@@ -775,54 +1066,87 @@
             };
 
             const showNotification = (message, type = 'info') => {
-                dom.notification.textContent = message;
-                dom.notification.className = type; // 'error' or 'info'
+                dom.notification.innerHTML = `${notificationIcons[type]}<span>${message}</span>`;
+                dom.notification.className = type;
                 dom.notification.classList.add('show');
                 setTimeout(() => dom.notification.classList.remove('show'), 4000);
             };
 
+            async function generateBookId(files, albumTitle) {
+                if (albumTitle && albumTitle !== 'Untitled Audiobook' && albumTitle !== 'Collection') {
+                    return `book-id-${albumTitle.replace(/\s+/g, '-').toLowerCase()}`;
+                }
+                const fileDetails = Array.from(files).map(f => `${f.name}-${f.size}`).sort().join('|');
+                const hash = CryptoJS.SHA1(fileDetails).toString();
+                return `book-id-${hash.substring(0, 12)}`;
+            }
+
+
             async function handleFileUpload(files) {
-                const file = files[0];
-                if (!file) return;
+                if (files.length === 0) {
+                    pendingBookIdFromHistory = null; // Reset pending state if user cancels file selection
+                    return;
+                }
 
-                const isZip = file.name.endsWith('.zip');
-                const isAudio = file.type.startsWith('audio/');
+                const firstFile = files[0];
+                const isZip = files.length === 1 && firstFile.name.endsWith('.zip');
+                const areAudio = Array.from(files).every(f => f.type.startsWith('audio/'));
 
-                if (!isZip && !isAudio) {
-                    showNotification('Please upload a valid .zip or audio file.', 'error');
+                if (!isZip && !areAudio) {
+                    showNotification('Please upload audio files or a single .zip file.', 'error');
+                    pendingBookIdFromHistory = null;
                     return;
                 }
 
                 dom.loader.style.display = 'block';
                 dom.uploadDropZone.style.display = 'none';
                 dom.historySection.style.display = 'none';
-                currentArchiveId = `${file.name}-${file.size}`;
-                overallBookTitle = file.name.replace(/\.[^/.]+$/, "");
 
                 try {
                     let extractedFiles;
                     if (isZip) {
-                        extractedFiles = await unzipFile(file);
+                        overallBookTitle = firstFile.name.replace(/\.zip$/i, "");
+                        extractedFiles = await unzipFile(firstFile);
                     } else {
-                        extractedFiles = [{ name: file.name, url: URL.createObjectURL(file), blob: file }];
+                        extractedFiles = Array.from(files).map(file => ({
+                            name: file.name,
+                            url: URL.createObjectURL(file),
+                            blob: file
+                        }));
                     }
-                    if (extractedFiles.length === 0) throw new Error('No supported audio files found in the archive.');
+                    if (extractedFiles.length === 0) throw new Error('No supported audio files found.');
 
                     playlistFiles = await Promise.all(extractedFiles.map(processFile));
                     playlistFiles.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
 
-                    // Try to find a common title/artwork from tags
-                    const firstFileWithTags = playlistFiles.find(f => f.tags);
+                    const firstFileWithTags = playlistFiles.find(f => f.tags && f.tags.album);
                     if (firstFileWithTags) {
-                        const tags = firstFileWithTags.tags;
-                        overallBookTitle = tags.album || overallBookTitle;
-                        overallBookArtwork = firstFileWithTags.artwork || null;
+                        overallBookTitle = firstFileWithTags.tags.album;
+                        const firstFileWithArtwork = playlistFiles.find(f => f.artwork);
+                        overallBookArtwork = firstFileWithArtwork ? firstFileWithArtwork.artwork : null;
+                    } else if (playlistFiles.length > 1 && !isZip) {
+                        overallBookTitle = "Collection";
+                    } else if (!isZip) {
+                        overallBookTitle = playlistFiles[0].title;
                     }
 
-                    const savedState = getSavedState();
-                    if (savedState) showResumePrompt(savedState);
-                    else startPlayer();
+                    if (!overallBookArtwork) {
+                        const firstFileWithArtwork = playlistFiles.find(f => f.artwork);
+                        if (firstFileWithArtwork) overallBookArtwork = firstFileWithArtwork.artwork;
+                    }
 
+                    currentBookId = await generateBookId(files, overallBookTitle);
+                    const savedState = getSavedState(currentBookId);
+
+                    // Check if this load was initiated from history
+                    if (pendingBookIdFromHistory && pendingBookIdFromHistory === currentBookId) {
+                        pendingBookIdFromHistory = null; // Clear pending state
+                        startPlayer(savedState); // Directly start with saved state
+                    } else if (savedState) {
+                        showResumePrompt(savedState);
+                    } else {
+                        startPlayer({ autoplay: true }); // Autoplay for new books
+                    }
                 } catch (error) {
                     showNotification(`Error: ${error.message}`, 'error');
                     resetToUploadView();
@@ -830,23 +1154,34 @@
             }
 
             const showResumePrompt = (savedState) => {
+                dom.resumeTitle.textContent = overallBookTitle;
                 dom.resumeModal.classList.add('visible');
                 dom.resumeYesBtn.onclick = () => { dom.resumeModal.classList.remove('visible'); startPlayer(savedState); };
-                dom.resumeNoBtn.onclick = () => { dom.resumeModal.classList.remove('visible'); startPlayer(); localStorage.removeItem(currentArchiveId); };
+                dom.resumeNoBtn.onclick = () => { dom.resumeModal.classList.remove('visible'); startPlayer({ autoplay: true }); localStorage.removeItem(currentBookId); };
             };
 
-            function startPlayer(initialState = {}) {
+            async function startPlayer(initialState = {}) {
                 dom.uploadSection.classList.remove('visible');
                 dom.playerSection.classList.add('visible');
                 dom.loader.style.display = 'none';
+                dom.currentAlbumEl.textContent = overallBookTitle;
 
                 buildPlaylist();
+                await calculateTotalDuration();
+
                 audio.playbackRate = initialState.speed || 1.0;
+                audio.volume = initialState.volume !== undefined ? initialState.volume : 1.0;
+                audio.muted = initialState.muted || false;
+                autoSpeedActive = initialState.autoSpeedActive || false;
                 updateSpeedUI();
-                loadTrack(initialState.trackIndex || 0, initialState.time || 0);
+                updateVolumeUI();
+                updateTotalTimeInfo();
+
+                const shouldAutoplay = initialState.wasPlaying || initialState.autoplay || false;
+                loadTrack(initialState.trackIndex || 0, initialState.time || 0, shouldAutoplay);
 
                 updateAndSaveHistory({
-                    id: currentArchiveId,
+                    id: currentBookId,
                     title: overallBookTitle,
                     artwork: overallBookArtwork
                 });
@@ -865,31 +1200,39 @@
             function resetPlayerState() {
                 clearInterval(saveInterval);
                 saveInterval = null;
+                stopAutoSpeed();
                 audio.pause();
                 audio.src = '';
-                playlistFiles.forEach(file => URL.revokeObjectURL(file.url));
+                playlistFiles.forEach(file => { if (file.url) URL.revokeObjectURL(file.url); });
                 playlistFiles = [];
-                currentArchiveId = null;
+                currentBookId = null;
+                pendingBookIdFromHistory = null;
                 overallBookArtwork = null;
                 overallBookTitle = 'Untitled Audiobook';
+                totalPlaylistDuration = 0;
                 dom.playlistEl.innerHTML = '';
+                dom.totalTimeInfo.textContent = '';
                 currentTrackIndex = 0;
-                dom.fileInput.value = ''; // Reset file input
+                dom.fileInput.value = '';
             }
 
             function resetToUploadView() {
                 dom.playerSection.classList.remove('visible');
                 dom.uploadSection.classList.add('visible');
                 dom.loader.style.display = 'none';
-                dom.uploadDropZone.style.display = 'block';
+                dom.uploadDropZone.style.display = 'flex';
                 dom.historySection.style.display = 'block';
+                dom.playPauseBtn.innerHTML = playIcon; // Ensure button is reset
             }
 
-            function loadTrack(index, startTime = 0) {
+            function loadTrack(index, startTime = 0, autoplay = false) {
                 if (index < 0 || index >= playlistFiles.length) return;
+                
+                dom.playPauseBtn.innerHTML = playIcon; // Set default state before loading
+                
                 currentTrackIndex = index;
                 const track = playlistFiles[index];
-
+                
                 const desiredSpeed = audio.playbackRate;
 
                 audio.src = track.url;
@@ -901,9 +1244,13 @@
 
                 audio.addEventListener('canplay', () => {
                     audio.playbackRate = desiredSpeed;
-                }, { once: true }); // The {once: true} option is important to auto-remove the listener.
-
-                audio.play().catch(e => console.warn("Playback was interrupted.", e));
+                    if (autoplay) {
+                        audio.play().catch(e => {
+                            console.warn("Playback was prevented by the browser.", e);
+                            dom.playPauseBtn.innerHTML = playIcon; // Ensure it's play icon if autoplay fails
+                        });
+                    }
+                }, { once: true });
             }
 
             function updateArtwork(track) {
@@ -916,23 +1263,33 @@
             }
 
             function saveState() {
-                if (!currentArchiveId || isNaN(audio.currentTime)) return;
+                if (!currentBookId || isNaN(audio.currentTime)) return;
                 const state = {
                     trackIndex: currentTrackIndex,
                     time: audio.currentTime,
-                    speed: audio.playbackRate
+                    speed: audio.playbackRate,
+                    volume: audio.volume,
+                    muted: audio.muted,
+                    autoSpeedActive: autoSpeedActive,
+                    wasPlaying: !audio.paused && audio.src, // Key fix: Save playing state
+                    bookInfo: {
+                        id: currentBookId,
+                        title: overallBookTitle,
+                        artwork: overallBookArtwork
+                    }
                 };
                 try {
-                    localStorage.setItem(currentArchiveId, JSON.stringify(state));
+                    localStorage.setItem(currentBookId, JSON.stringify(state));
                 } catch (e) {
                     console.error("Could not save state to localStorage.", e);
                     showNotification("Could not save progress.", "error");
                 }
             }
 
-            const getSavedState = () => {
+            const getSavedState = (bookId) => {
                 try {
-                    return JSON.parse(localStorage.getItem(currentArchiveId));
+                    const state = localStorage.getItem(bookId);
+                    return state ? JSON.parse(state) : null;
                 } catch (e) { return null; }
             }
 
@@ -946,7 +1303,8 @@
                             if (entry.directory || entry.filename.startsWith('__MACOSX/')) continue;
                             if (/\.(mp3|wav|ogg|m4a|flac)$/i.test(entry.filename)) {
                                 const blob = await entry.getData(new zip.BlobWriter());
-                                audioFiles.push({ name: entry.filename.split('/').pop(), url: URL.createObjectURL(blob), blob: blob });
+                                const name = entry.filename.split('/').pop();
+                                audioFiles.push({ name, url: URL.createObjectURL(blob), blob });
                             }
                         }
                         await zipReader.close();
@@ -963,7 +1321,7 @@
                             file.title = tag.tags.title || file.name.replace(/\.[^/.]+$/, "");
                             const { data, format } = tag.tags.picture || {};
                             if (data) {
-                                const base64String = btoa(data.reduce((acc, byte) => acc + String.fromCharCode(byte), ''));
+                                const base64String = btoa(String.fromCharCode(...data));
                                 file.artwork = `data:${format};base64,${base64String}`;
                             }
                             resolve(file);
@@ -980,34 +1338,90 @@
             }
 
             const togglePlayPause = () => { if (audio.src) audio.paused ? audio.play() : audio.pause(); };
-            const playPrevious = () => loadTrack((currentTrackIndex - 1 + playlistFiles.length) % playlistFiles.length);
-            const playNext = () => {
-                if (currentTrackIndex >= playlistFiles.length - 1) {
+            const seekRelative = (seconds) => audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + seconds));
+            const playPrevious = () => loadTrack((currentTrackIndex - 1 + playlistFiles.length) % playlistFiles.length, 0, true);
+            const playNext = (event) => {
+                const isEnded = event && event.type === 'ended';
+                if (currentTrackIndex >= playlistFiles.length - 1 && isEnded) {
                     showNotification("Audiobook finished!", "info");
-                    goBackToUpload();
+                    setTimeout(goBackToUpload, 1000);
                     return;
                 }
-                loadTrack((currentTrackIndex + 1) % playlistFiles.length);
+                loadTrack((currentTrackIndex + 1) % playlistFiles.length, 0, true);
             }
+            const toggleMute = () => { audio.muted = !audio.muted; };
 
             function changeSpeed(increment) {
                 let newSpeed = parseFloat((audio.playbackRate + increment).toFixed(2));
                 newSpeed = Math.max(SPEED_MIN, Math.min(newSpeed, SPEED_MAX));
                 audio.playbackRate = newSpeed;
                 updateSpeedUI();
+                updateTotalTimeInfo();
             }
+
+            // --- AUTO SPEED FUNCTIONS ---
+            function toggleAutoSpeed() {
+                autoSpeedActive = !autoSpeedActive;
+                updateSpeedUI();
+                if (autoSpeedActive && !audio.paused) {
+                    startAutoSpeed();
+                } else {
+                    stopAutoSpeed();
+                }
+            }
+
+            function startAutoSpeed() {
+                stopAutoSpeed(); // Ensure no multiple intervals are running
+                autoSpeedIntervalId = setInterval(() => {
+                    changeSpeed(AUTO_SPEED_INCREMENT);
+                    showNotification(`Speed increased to ${audio.playbackRate.toFixed(1)}x`, 'info');
+                }, AUTO_SPEED_INTERVAL_MS);
+            }
+
+            function stopAutoSpeed() {
+                if (autoSpeedIntervalId) {
+                    clearInterval(autoSpeedIntervalId);
+                    autoSpeedIntervalId = null;
+                }
+            }
+
 
             function updateSpeedUI() {
                 const currentSpeed = audio.playbackRate;
-                dom.speedLabel.textContent = `${currentSpeed.toFixed(1)}x`;
-                dom.speedDownBtn.disabled = (currentSpeed <= SPEED_MIN);
-                dom.speedUpBtn.disabled = (currentSpeed >= SPEED_MAX);
+                dom.speedLabel.innerHTML = `${currentSpeed.toFixed(1)}x ${autoSpeedActive ? '<span class="auto-indicator">auto</span>' : ''}`;
+                dom.speedDownBtn.disabled = (currentSpeed.toFixed(2) <= SPEED_MIN);
+                dom.speedUpBtn.disabled = (currentSpeed.toFixed(2) >= SPEED_MAX);
+                dom.autoSpeedBtn.classList.toggle('active', autoSpeedActive);
             }
+
+            function updateVolumeUI() {
+                const vol = audio.volume;
+                const muted = audio.muted;
+                if (!muted) {
+                    dom.volumeSlider.value = vol;
+                }
+
+                if (muted) dom.volumeBtn.innerHTML = volumeIcons.muted;
+                else if (vol < 0.5) dom.volumeBtn.innerHTML = volumeIcons.low;
+                else dom.volumeBtn.innerHTML = volumeIcons.high;
+            }
+
 
             function updateProgress() {
                 if (isNaN(audio.duration)) return;
                 dom.progressBar.value = audio.currentTime;
                 dom.currentTimeEl.textContent = formatTime(audio.currentTime);
+            }
+
+            function updateProgressTooltip(e) {
+                const rect = dom.progressBar.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const width = rect.width;
+                const progress = Math.max(0, Math.min(1, x / width));
+                const time = progress * audio.duration;
+
+                dom.progressTooltip.textContent = formatTime(time);
+                dom.progressTooltip.style.left = `${x}px`;
             }
 
             const setSeek = () => audio.currentTime = dom.progressBar.value;
@@ -1023,21 +1437,43 @@
                             <span class="playlist-track-title">${file.title}</span>
                         </div>
                         <span class="playlist-track-duration">--:--</span>`;
-                    li.addEventListener('click', () => { if (currentTrackIndex !== index) loadTrack(index); });
+                    li.addEventListener('click', () => { if (currentTrackIndex !== index) loadTrack(index, 0, true); });
                     dom.playlistEl.appendChild(li);
-
-                    // Get duration async and update UI
-                    if (file.duration) {
-                        li.querySelector('.playlist-track-duration').textContent = formatTime(file.duration);
-                    } else {
-                        const tempAudio = new Audio(file.url);
-                        tempAudio.onloadedmetadata = () => {
-                            file.duration = tempAudio.duration;
-                            li.querySelector('.playlist-track-duration').textContent = formatTime(file.duration);
-                        };
-                    }
                 });
             }
+
+            async function getFileDuration(file) {
+                return new Promise((resolve) => {
+                    if (file.duration) {
+                        resolve(file.duration);
+                        return;
+                    }
+                    const tempAudio = new Audio(file.url);
+                    tempAudio.onloadedmetadata = () => {
+                        file.duration = tempAudio.duration;
+                        const li = dom.playlistEl.querySelector(`[data-index='${playlistFiles.indexOf(file)}'] .playlist-track-duration`);
+                        if (li) li.textContent = formatTime(file.duration);
+                        resolve(file.duration);
+                    };
+                    tempAudio.onerror = () => resolve(0); // Resolve with 0 if there's an error
+                });
+            }
+
+            async function calculateTotalDuration() {
+                const durations = await Promise.all(playlistFiles.map(getFileDuration));
+                totalPlaylistDuration = durations.reduce((acc, curr) => acc + curr, 0);
+                updateTotalTimeInfo();
+            }
+
+            function updateTotalTimeInfo() {
+                if (totalPlaylistDuration > 0) {
+                    const adjustedDuration = totalPlaylistDuration / audio.playbackRate;
+                    dom.totalTimeInfo.innerHTML = `Total time: <strong>${formatTime(adjustedDuration, true)}</strong>`;
+                } else {
+                    dom.totalTimeInfo.textContent = '';
+                }
+            }
+
 
             function updatePlaylistUI() {
                 Array.from(dom.playlistEl.children).forEach((item, index) => {
@@ -1048,13 +1484,21 @@
                 });
             }
 
-            function formatTime(seconds) {
+            function formatTime(seconds, showHoursEvenIfZero = false) {
                 if (isNaN(seconds) || seconds < 0) return "0:00";
-                const h = Math.floor(seconds / 3600);
-                const m = Math.floor((seconds % 3600) / 60);
-                const s = Math.floor(seconds % 60);
-                const sFmt = `${s < 10 ? '0' : ''}${s}`;
-                return h > 0 ? `${h}:${m < 10 ? '0' : ''}${m}:${sFmt}` : `${m}:${sFmt}`;
+                seconds = Math.round(seconds);
+                let h = Math.floor(seconds / 3600);
+                let m = Math.floor((seconds % 3600) / 60);
+                let s = Math.floor(seconds % 60);
+
+                const sFmt = s.toString().padStart(2, '0');
+                const mFmt = h > 0 || (showHoursEvenIfZero && totalPlaylistDuration >= 3600) ? m.toString().padStart(2, '0') : m.toString();
+
+                if (h > 0 || (showHoursEvenIfZero && totalPlaylistDuration >= 3600)) {
+                    return `${h}:${mFmt}:${sFmt}`;
+                } else {
+                    return `${mFmt}:${sFmt}`;
+                }
             }
 
             // --- HISTORY FUNCTIONS ---
@@ -1063,16 +1507,18 @@
                     return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
                 } catch (e) { return []; }
             }
+            
+            function saveHistory(history) {
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+            }
 
             function updateAndSaveHistory(bookData) {
+                if (!bookData.id) return;
                 let history = getHistory();
-                // Remove existing entry if it exists
                 history = history.filter(item => item.id !== bookData.id);
-                // Add new entry to the front
                 history.unshift(bookData);
-                // Trim history to max length
                 history = history.slice(0, MAX_HISTORY_ITEMS);
-                localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+                saveHistory(history);
             }
 
             function renderHistory() {
@@ -1087,19 +1533,62 @@
                 history.forEach(book => {
                     const item = document.createElement('div');
                     item.className = 'history-item';
-                    const rotation = Math.random() * 8 - 4; // -4 to +4 degrees
-                    item.style.transform = `rotate(${rotation}deg)`;
+                    item.dataset.bookId = book.id;
+                    item.title = book.title;
                     item.innerHTML = `
-                        ${book.artwork ? `<img src="${book.artwork}" alt="">` : artworkIcon}
+                        <div class="history-item-artwork">
+                             ${book.artwork ? `<img src="${book.artwork}" alt="${book.title}">` : artworkIcon}
+                        </div>
                         <div class="title">${book.title}</div>
+                        <div class="history-item-remove-btn" title="Remove from Bookshelf">
+                            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </div>
                     `;
+                    item.addEventListener('click', (e) => {
+                         if (e.target.closest('.history-item-remove-btn')) return;
+                         loadFromHistory(book.id);
+                    });
+                    
+                    item.querySelector('.history-item-remove-btn').addEventListener('click', () => {
+                        removeBookFromHistory(book.id);
+                    });
+
                     dom.historyGrid.appendChild(item);
                 });
+            }
+
+            function removeBookFromHistory(bookId) {
+                let history = getHistory();
+                history = history.filter(item => item.id !== bookId);
+                saveHistory(history);
+                localStorage.removeItem(bookId); // Also remove the saved state for that book
+                
+                const itemToRemove = dom.historyGrid.querySelector(`.history-item[data-book-id="${bookId}"]`);
+                if(itemToRemove) {
+                    itemToRemove.style.transition = 'opacity 0.3s, transform 0.3s';
+                    itemToRemove.style.opacity = '0';
+                    itemToRemove.style.transform = 'scale(0.8)';
+                    setTimeout(() => renderHistory(), 300);
+                }
+            }
+
+
+            function loadFromHistory(bookId) {
+                const savedState = getSavedState(bookId);
+                if (!savedState) {
+                    showNotification("Sorry, couldn't find the save data for that book.", "error");
+                    removeBookFromHistory(bookId); // Clean up broken history entry
+                    return;
+                }
+                pendingBookIdFromHistory = bookId;
+                dom.historyLoadModal.classList.add('visible');
             }
 
             // --- INITIAL SETUP ---
             dom.playPauseBtn.innerHTML = playIcon;
             dom.artworkPlaceholder.innerHTML = artworkIcon;
+            updateVolumeUI();
+            updateSpeedUI();
             renderHistory();
             setupEventListeners();
         });
