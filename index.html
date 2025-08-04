@@ -1337,7 +1337,21 @@
                 dom.totalDurationEl.textContent = formatTime(duration);
             }
 
-            const togglePlayPause = () => { if (audio.src) audio.paused ? audio.play() : audio.pause(); };
+            const togglePlayPause = () => {
+                if (!audio.src) return;
+
+                if (audio.paused) {
+                    const playPromise = audio.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.error("Audio playback failed:", error);
+                            // The onpause event will handle the UI update to playIcon
+                        });
+                    }
+                } else {
+                    audio.pause();
+                }
+            };
             const seekRelative = (seconds) => audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + seconds));
             const playPrevious = () => loadTrack((currentTrackIndex - 1 + playlistFiles.length) % playlistFiles.length, 0, true);
             const playNext = (event) => {
