@@ -1306,9 +1306,6 @@
             dom.loader.style.display = 'none';
             dom.currentAlbumEl.textContent = overallBookTitle;
 
-            updateSpeedUI();
-            updateVolumeUI();
-
             if (isSingleM4B) {
                 audio.src = playlistFiles[0].url; // Load the single M4B file
             }
@@ -1397,6 +1394,8 @@
             const canplayHandler = () => {
                 audio.playbackRate = desiredSpeed;
 
+                updateSpeedUI();
+                updateVolumeUI();
                 updateTotalTimeInfo();
                 
                 if (autoplay) {
