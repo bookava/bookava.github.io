@@ -1306,6 +1306,9 @@
             dom.loader.style.display = 'none';
             dom.currentAlbumEl.textContent = overallBookTitle;
 
+            updateSpeedUI();
+            updateVolumeUI();
+
             if (isSingleM4B) {
                 audio.src = playlistFiles[0].url; // Load the single M4B file
             }
@@ -1331,10 +1334,6 @@
             const initialTime = initialState.time || (isSingleM4B ? playlistFiles[0].startTime : 0);
             
             loadTrack(initialState.trackIndex || 0, initialTime, shouldAutoplay);
-
-            updateSpeedUI();
-            updateVolumeUI();
-            updateTotalTimeInfo();
             
             updateAndSaveHistory({
                 id: currentBookId,
@@ -1397,6 +1396,9 @@
             
             const canplayHandler = () => {
                 audio.playbackRate = desiredSpeed;
+
+                updateTotalTimeInfo();
+                
                 if (autoplay) {
                     audio.play().catch(e => {
                         console.warn("Playback was prevented by the browser.", e);
