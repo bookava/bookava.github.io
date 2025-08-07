@@ -1660,39 +1660,83 @@
         }
 
         function updateTotalTimeInfo() {
-            // Exit if we don't have the necessary data yet
             if (totalPlaylistDuration <= 0 || isNaN(audio.currentTime)) {
                 dom.totalTimeInfo.textContent = '';
                 return;
             }
 
             let timeElapsedSoFar = 0;
-
             if (isSingleM4B) {
-                // For a single M4B file, elapsed time is simply the currentTime
                 timeElapsedSoFar = audio.currentTime;
             } else {
-                // For multiple files, sum the durations of the tracks already played
                 for (let i = 0; i < currentTrackIndex; i++) {
                     if (playlistFiles[i] && typeof playlistFiles[i].duration === 'number') {
                         timeElapsedSoFar += playlistFiles[i].duration;
                     }
                 }
-                // Add the progress of the current track
                 timeElapsedSoFar += audio.currentTime;
             }
 
+            // This is the total audio content left to play, independent of speed.
             const remainingSeconds = totalPlaylistDuration - timeElapsedSoFar;
             
-            // Calculate remaining time adjusted for current speed. Ensure it doesn't go below zero.
-            const adjustedRemainingTime = Math.max(0, remainingSeconds / audio.playbackRate);
+            let adjustedRemainingTime;
 
-            // Format the time strings
+            if (autoSpeedActive) {
+                // Use the new predictive function if auto-speed is on.
+                adjustedRemainingTime = calculateAutoSpeedAdjustedTime(remainingSeconds, audio.playbackRate);
+            } else {
+                // Otherwise, use the simple calculation for the current fixed speed.
+                adjustedRemainingTime = remainingSeconds / audio.playbackRate;
+            }
+            
+            // Ensure time doesn't go negative.
+            adjustedRemainingTime = Math.max(0, adjustedRemainingTime);
+
             const formattedRemaining = formatTime(adjustedRemainingTime, true);
             const formattedTotal = formatTime(totalPlaylistDuration, true);
             
-            // Update the element with the new format
             dom.totalTimeInfo.innerHTML = `Time: <strong>${formattedRemaining}/${formattedTotal}</strong>`;
+        }
+
+        /**
+         * Predicts the total listening time remaining, accounting for future speed increases
+         * from the auto-speed feature.
+         * @param {number} remainingSeconds - The amount of audio content left at 1.0x speed.
+         * @param {number} currentSpeed - The current playback rate.
+         * @returns {number} The predicted total time in seconds to finish the remaining audio.
+         */
+        function calculateAutoSpeedAdjustedTime(remainingSeconds, currentSpeed) {
+            let totalAdjustedTime = 0;
+            let speed = currentSpeed;
+            let secondsLeftToProcess = remainingSeconds;
+            const autoSpeedIntervalSeconds = AUTO_SPEED_INTERVAL_MS / 1000; // e.g., 600 seconds
+
+            while (secondsLeftToProcess > 0 && speed < SPEED_MAX) {
+                // Calculate how much audio content is covered in one 10-minute (600s) interval at the current speed.
+                const contentInNextInterval = autoSpeedIntervalSeconds * speed;
+
+                if (secondsLeftToProcess <= contentInNextInterval) {
+                    // The audiobook will finish before the next speed-up.
+                    // Calculate the time for the final remaining part and add it.
+                    totalAdjustedTime += secondsLeftToProcess / speed;
+                    secondsLeftToProcess = 0; // Exit loop
+                } else {
+                    // A full 10-minute interval will pass at the current speed.
+                    totalAdjustedTime += autoSpeedIntervalSeconds;
+                    // Subtract the audio content that was covered in this interval.
+                    secondsLeftToProcess -= contentInNextInterval;
+                    // Increase speed for the next iteration.
+                    speed = parseFloat((speed + AUTO_SPEED_INCREMENT).toFixed(2));
+                }
+            }
+            
+            // If the loop finished because max speed was reached, calculate the rest.
+            if (secondsLeftToProcess > 0) {
+                 totalAdjustedTime += secondsLeftToProcess / SPEED_MAX;
+            }
+
+            return totalAdjustedTime;
         }
 
         function updatePlaylistUI() {
