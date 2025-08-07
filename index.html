@@ -926,6 +926,113 @@
                 transform: rotate(360deg);
             }
         }
+
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 900px; /* Wider container for desktop */
+            }
+        
+            /* Desktop Player Layout */
+            .player-section.view.visible {
+                display: grid;
+                grid-template-columns: 1fr 320px; /* Two-column layout */
+                grid-template-rows: auto 1fr;
+                grid-template-areas:
+                    "header header"
+                    "main-player playlist";
+                gap: 0 2rem;
+                padding-bottom: 1rem;
+            }
+        
+            .player-header {
+                grid-area: header;
+                padding: 1rem 2.5rem 0.5rem;
+            }
+        
+            .main-player {
+                grid-area: main-player;
+                padding: 0 2.5rem 1.5rem;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+        
+            #artwork-placeholder {
+                max-width: 100%; /* Allow artwork to be larger */
+            }
+        
+            .playlist-section {
+                grid-area: playlist;
+                max-height: none; /* Remove max-height on desktop */
+                border-top: none;
+                border-left: 1px solid var(--border-color);
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            #playlist {
+                flex-grow: 1;
+            }
+        
+            .playlist-section::-webkit-scrollbar {
+                width: 8px;
+            }
+        
+            .playlist-section::-webkit-scrollbar-track {
+                background: transparent;
+            }
+        
+            .playlist-section::-webkit-scrollbar-thumb {
+                background: var(--border-color);
+                border-radius: 4px;
+            }
+        
+            .playlist-section::-webkit-scrollbar-thumb:hover {
+                background: var(--text-muted-color);
+            }
+            
+            .bottom-controls {
+                /* These controls are now in the header for desktop */
+                display: none;
+            }
+        
+            /* Re-enable volume controls in the header for desktop */
+            .player-header .volume-control-container {
+                display: flex;
+            }
+        
+        
+            /* Desktop Upload and History Layout */
+            .upload-section {
+                padding: 3rem 4rem 4rem;
+            }
+        
+            .history-grid {
+                /* Show more items per row on desktop */
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 2.5rem 2rem;
+            }
+        
+            .history-item {
+                width: 130px;
+            }
+        
+            .history-item-artwork {
+                height: 170px;
+            }
+        }
+        
+        /* Adjustments for medium-sized screens like tablets */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .container {
+                max-width: 600px;
+            }
+        
+            .history-grid {
+                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            }
+        }
     </style>
 </head>
 
