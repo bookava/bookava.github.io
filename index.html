@@ -1602,6 +1602,8 @@
                     updatePlaylistUI();
                 }
             }
+
+            updateTotalTimeInfo();
         }
 
         function updateProgressTooltip(e) {
@@ -1658,12 +1660,39 @@
         }
 
         function updateTotalTimeInfo() {
-            if (totalPlaylistDuration > 0) {
-                const adjustedDuration = totalPlaylistDuration / audio.playbackRate;
-                dom.totalTimeInfo.innerHTML = `Total time: <strong>${formatTime(adjustedDuration, true)}</strong>`;
-            } else {
+            // Exit if we don't have the necessary data yet
+            if (totalPlaylistDuration <= 0 || isNaN(audio.currentTime)) {
                 dom.totalTimeInfo.textContent = '';
+                return;
             }
+
+            let timeElapsedSoFar = 0;
+
+            if (isSingleM4B) {
+                // For a single M4B file, elapsed time is simply the currentTime
+                timeElapsedSoFar = audio.currentTime;
+            } else {
+                // For multiple files, sum the durations of the tracks already played
+                for (let i = 0; i < currentTrackIndex; i++) {
+                    if (playlistFiles[i] && typeof playlistFiles[i].duration === 'number') {
+                        timeElapsedSoFar += playlistFiles[i].duration;
+                    }
+                }
+                // Add the progress of the current track
+                timeElapsedSoFar += audio.currentTime;
+            }
+
+            const remainingSeconds = totalPlaylistDuration - timeElapsedSoFar;
+            
+            // Calculate remaining time adjusted for current speed. Ensure it doesn't go below zero.
+            const adjustedRemainingTime = Math.max(0, remainingSeconds / audio.playbackRate);
+
+            // Format the time strings
+            const formattedRemaining = formatTime(adjustedRemainingTime, true);
+            const formattedTotal = formatTime(totalPlaylistDuration, true);
+            
+            // Update the element with the new format
+            dom.totalTimeInfo.innerHTML = `Time: <strong>${formattedRemaining}/${formattedTotal}</strong>`;
         }
 
         function updatePlaylistUI() {
