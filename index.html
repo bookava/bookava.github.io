@@ -1326,14 +1326,16 @@
             audio.volume = initialState.volume !== undefined ? initialState.volume : 1.0;
             audio.muted = initialState.muted || false;
             autoSpeedActive = initialState.autoSpeedActive || false;
-            updateSpeedUI();
-            updateVolumeUI();
 
             const shouldAutoplay = initialState.wasPlaying || initialState.autoplay || false;
             const initialTime = initialState.time || (isSingleM4B ? playlistFiles[0].startTime : 0);
             
             loadTrack(initialState.trackIndex || 0, initialTime, shouldAutoplay);
 
+            updateSpeedUI();
+            updateVolumeUI();
+            updateTotalTimeInfo();
+            
             updateAndSaveHistory({
                 id: currentBookId,
                 title: overallBookTitle,
