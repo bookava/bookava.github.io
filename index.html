@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="/images/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
@@ -44,6 +45,7 @@
         }
 
         body {
+            --font-numeric: 'Roboto Mono', monospace; 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 1.5rem;
@@ -64,7 +66,7 @@
             border-radius: var(--border-radius-lg);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
             border: 1px solid var(--border-color);
-            transition: background-color var(--transition-speed);
+            transition: background-color var(--transition-speed), max-width var(--transition-speed);
             overflow: hidden;
             position: relative;
         }
@@ -211,6 +213,7 @@
         .history-section {
             margin-top: 3rem;
             perspective: 1000px;
+            display: none;
             /* Add perspective for 3D effects */
         }
 
@@ -320,7 +323,7 @@
             font-weight: 500;
             line-height: 1.4;
             display: -webkit-box;
-            -webkit-box-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -358,6 +361,10 @@
             width: 28px;
             height: 28px;
             fill: var(--text-color);
+        }
+        
+        .player-header .volume-control-container {
+            display: none; /* Hidden on mobile */
         }
 
         .main-player {
@@ -423,6 +430,11 @@
             margin: 0.75rem 0 1.5rem;
         }
 
+        .time-display,
+        .playback-controls .seek-btn {
+            font-family: var(--font-numeric);
+        }
+
         #progress-tooltip {
             position: absolute;
             background-color: var(--background-color);
@@ -431,14 +443,27 @@
             border-radius: 6px;
             font-size: 0.85rem;
             font-weight: 600;
-            bottom: 35px;
+            /* CHANGED: From 'bottom' to 'top' with a negative value */
+            top: -35px; 
             transform: translateX(-50%);
             opacity: 0;
             transition: opacity 0.2s;
             pointer-events: none;
             z-index: 10;
+            border: 1px solid var(--border-color); /* Added a border to match modal style */
         }
 
+        /* NEW: Adds the small triangle pointing down from the tooltip */
+        #progress-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%; /* Position at the bottom of the tooltip */
+            left: 50%;
+            margin-left: -6px; /* Center the triangle */
+            border-width: 6px;
+            border-style: solid;
+            border-color: var(--background-color) transparent transparent transparent;
+        }
 
         input[type="range"] {
             -webkit-appearance: none;
@@ -452,7 +477,6 @@
             transition: height 0.2s;
         }
         
-        /* FIX: Light theme visibility for sliders */
         body.light-theme input[type="range"] {
             background: #e2e8f0;
         }
@@ -617,7 +641,7 @@
             font-weight: 600;
             font-size: 1.2rem;
             min-width: 70px;
-            /* Wider to accommodate 'auto' */
+            font-family: var(--font-numeric);
         }
 
         #speed-label .auto-indicator {
@@ -629,6 +653,7 @@
 
 
         .total-time-info {
+            font-family: var(--font-numeric);
             text-align: center;
             font-size: 0.85rem;
             color: var(--text-muted-color);
@@ -638,7 +663,7 @@
 
         .bottom-controls {
             display: flex;
-            justify-content: space-between;
+            justify-content: center; /* Center volume on mobile */
             align-items: center;
             padding: 0.5rem 1.5rem 1rem;
         }
@@ -828,7 +853,7 @@
             border-radius: var(--border-radius-lg);
             padding: 2rem;
             text-align: center;
-            max-width: 340px;
+            max-width: 380px; /* Wider modal for new settings */
             width: 90%;
             transform: scale(0.95) translateY(20px);
             transition: all 0.3s ease-in-out;
@@ -854,6 +879,7 @@
         .modal-buttons {
             display: flex;
             gap: 1rem;
+            flex-wrap: wrap; /* Allow buttons to wrap */
         }
 
         .modal-buttons button {
@@ -865,6 +891,7 @@
             border-radius: var(--border-radius-md);
             transition: all 0.2s;
             border: none;
+            min-width: 100px;
         }
 
         .modal-buttons .modal-secondary-btn {
@@ -892,6 +919,121 @@
         .modal-buttons .modal-primary-btn:hover {
             background: var(--primary-hover-color);
         }
+        
+        .modal-buttons .modal-danger-btn {
+            background: var(--error-color);
+            color: white;
+            flex-basis: 100%; /* Make disable button full width */
+            order: 3; /* Push to the bottom */
+        }
+        .modal-buttons .modal-danger-btn:hover {
+            background: #f87171;
+        }
+
+        /* --- NEW: AUTO-SPEED MODAL STYLES --- */
+        .auto-speed-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .form-group-column {
+             display: flex;
+             flex-direction: column;
+             align-items: flex-start;
+             gap: 0.5rem;
+        }
+
+        .form-group label, .toggle-switch-label {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .form-group .input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--background-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group input[type="number"] {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 1rem;
+            width: 60px;
+            text-align: right;
+            outline: none;
+            appearance: textfield;
+        }
+        
+        .form-group input::-webkit-outer-spin-button,
+        .form-group input::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+
+        .form-group .unit {
+            font-size: 0.9rem;
+            color: var(--text-muted-color);
+        }
+        
+        /* Pretty Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--background-color);
+            border: 1px solid var(--border-color);
+            transition: .4s;
+            border-radius: 28px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--text-muted-color);
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        input:checked + .toggle-slider:before {
+            background-color: white;
+            transform: translateX(22px);
+        }
+
 
         #theme-toggle-btn {
             position: fixed;
@@ -1108,7 +1250,7 @@
                     <button id="speed-down-btn" class="speed-btn" title="Decrease Speed">-</button>
                     <span id="speed-label">1.0x</span>
                     <button id="speed-up-btn" class="speed-btn" title="Increase Speed">+</button>
-                    <button id="auto-speed-btn" class="speed-btn" title="Auto-speed (+0.1x / 10min)">
+                    <button id="auto-speed-btn" class="speed-btn" title="Auto-speed Settings">
                         <svg viewBox="0 0 24 24" fill="currentColor"
                             style="width: 22px; height: 22px; pointer-events: none;">
                             <path
@@ -1117,7 +1259,13 @@
                     </button>
                 </div>
                 <div id="total-time-info" class="total-time-info"></div>
-
+            </div>
+            
+            <div class="bottom-controls">
+                <div class="volume-control-container">
+                    <button id="volume-btn-mobile" title="Volume"></button>
+                    <input type="range" id="volume-slider-mobile" min="0" max="1" step="0.05" value="1" />
+                </div>
             </div>
 
             <div class="playlist-section">
@@ -1148,6 +1296,43 @@
             <div class="modal-buttons">
                 <button class="modal-secondary-btn" id="history-load-cancel">Cancel</button>
                 <button class="modal-primary-btn" id="history-load-select">Select File(s)</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AUTO-SPEED MODAL (NEW) -->
+    <div class="modal-overlay" id="auto-speed-modal">
+        <div class="modal-content">
+            <h3>Auto-Speed Settings</h3>
+            <div class="auto-speed-form">
+                <div class="form-group">
+                    <label for="auto-speed-interval">Interval</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="auto-speed-interval" min="1" step="1">
+                        <span class="unit">min</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="auto-speed-increment">Increment</label>
+                    <div class="input-wrapper">
+                         <input type="number" id="auto-speed-increment" min="0.01" step="0.01">
+                        <span class="unit">x</span>
+                    </div>
+                </div>
+                 <div class="form-group">
+                    <label for="auto-speed-wave" class="toggle-switch-label">Wave Increase
+                        <p style="font-size: 0.8rem; font-weight: 400; color: var(--text-muted-color); margin: 4px 0 0;">Two steps forward, one step back.</p>
+                    </label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="auto-speed-wave">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-secondary-btn" id="auto-speed-cancel">Cancel</button>
+                <button class="modal-primary-btn" id="auto-speed-save">Save & Enable</button>
+                <button class="modal-danger-btn" id="auto-speed-disable">Disable Auto-Speed</button>
             </div>
         </div>
     </div>
@@ -1200,8 +1385,19 @@
             notification: document.getElementById('notification'),
             volumeBtn: document.getElementById('volume-btn'),
             volumeSlider: document.getElementById('volume-slider'),
+            volumeBtnMobile: document.getElementById('volume-btn-mobile'),
+            volumeSliderMobile: document.getElementById('volume-slider-mobile'),
             totalTimeInfo: document.getElementById('total-time-info'),
             themeToggleBtn: document.getElementById('theme-toggle-btn'),
+
+            // New Auto-Speed Modal Elements
+            autoSpeedModal: document.getElementById('auto-speed-modal'),
+            autoSpeedIntervalInput: document.getElementById('auto-speed-interval'),
+            autoSpeedIncrementInput: document.getElementById('auto-speed-increment'),
+            autoSpeedWaveInput: document.getElementById('auto-speed-wave'),
+            autoSpeedSaveBtn: document.getElementById('auto-speed-save'),
+            autoSpeedCancelBtn: document.getElementById('auto-speed-cancel'),
+            autoSpeedDisableBtn: document.getElementById('auto-speed-disable'),
         };
 
         const audio = new Audio();
@@ -1213,15 +1409,25 @@
         let overallBookTitle = 'Untitled Audiobook';
         let overallBookArtwork = null;
         let totalPlaylistDuration = 0;
-        let autoSpeedActive = false;
         let autoSpeedIntervalId = null;
         let isSingleM4B = false;
 
+        let liveCountdownAnimationId = null;
+        let liveCountdownStartValue = 0;
+        let liveCountdownStartTime = 0;
+
+        // NEW: Advanced auto-speed state object
+        let autoSpeedSettings = {
+            isActive: false,
+            intervalMins: 10,
+            increment: 0.10,
+            isWave: false,
+            waveCounter: 0 // 0, 1 are increases; 2 is a decrease
+        };
+
         const SPEED_MIN = 0.5,
             SPEED_MAX = 16.0,
-            SPEED_INCREMENT = 0.1;
-        const AUTO_SPEED_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
-        const AUTO_SPEED_INCREMENT = 0.1;
+            SPEED_INCREMENT_MANUAL = 0.1;
 
         const HISTORY_KEY = 'bookava_history_v4';
         const MAX_HISTORY_ITEMS = 6;
@@ -1251,9 +1457,9 @@
             dom.forwardBtn.addEventListener('click', () => seekRelative(15));
             dom.prevBtn.addEventListener('click', playPrevious);
             dom.nextBtn.addEventListener('click', playNext);
-            dom.speedDownBtn.addEventListener('click', () => changeSpeed(-SPEED_INCREMENT));
-            dom.speedUpBtn.addEventListener('click', () => changeSpeed(SPEED_INCREMENT));
-            dom.autoSpeedBtn.addEventListener('click', toggleAutoSpeed);
+            dom.speedDownBtn.addEventListener('click', () => changeSpeed(-SPEED_INCREMENT_MANUAL));
+            dom.speedUpBtn.addEventListener('click', () => changeSpeed(SPEED_INCREMENT_MANUAL));
+            dom.autoSpeedBtn.addEventListener('click', openAutoSpeedModal);
             dom.progressBar.addEventListener('input', setSeek);
             dom.progressBar.addEventListener('mousemove', updateProgressTooltip);
             dom.progressBar.addEventListener('mouseenter', () => dom.progressTooltip.style.opacity = '1');
@@ -1263,11 +1469,23 @@
             audio.addEventListener('loadedmetadata', handleTrackMetadata);
             audio.addEventListener('ended', handleAudioEnded);
             audio.addEventListener('volumechange', updateVolumeUI);
-            dom.volumeSlider.addEventListener('input', () => {
+            
+            // Sync desktop and mobile volume controls
+            dom.volumeSlider.addEventListener('input', (e) => {
+                const newVolume = e.target.value;
                 audio.muted = false;
-                audio.volume = dom.volumeSlider.value
+                audio.volume = newVolume;
+                dom.volumeSliderMobile.value = newVolume;
+            });
+            dom.volumeSliderMobile.addEventListener('input', (e) => {
+                const newVolume = e.target.value;
+                audio.muted = false;
+                audio.volume = newVolume;
+                dom.volumeSlider.value = newVolume;
             });
             dom.volumeBtn.addEventListener('click', toggleMute);
+            dom.volumeBtnMobile.addEventListener('click', toggleMute);
+
 
             dom.historyLoadCancel.addEventListener('click', () => {
                 dom.historyLoadModal.classList.remove('visible');
@@ -1278,14 +1496,25 @@
                 dom.fileInput.click();
             });
 
+            // New Auto-Speed Modal listeners
+            dom.autoSpeedSaveBtn.addEventListener('click', handleSaveAutoSpeed);
+            dom.autoSpeedDisableBtn.addEventListener('click', handleDisableAutoSpeed);
+            dom.autoSpeedCancelBtn.addEventListener('click', () => dom.autoSpeedModal.classList.remove('visible'));
+
+
             audio.onplay = () => {
                 dom.playPauseBtn.innerHTML = pauseIcon;
-                if (autoSpeedActive) startAutoSpeed();
+                if (autoSpeedSettings.isActive) startAutoSpeed();
+                updateTotalTimeInfo(); 
             };
             audio.onpause = () => {
                 dom.playPauseBtn.innerHTML = playIcon;
                 saveState();
                 stopAutoSpeed();
+                if (liveCountdownAnimationId) {
+                    cancelAnimationFrame(liveCountdownAnimationId);
+                    liveCountdownAnimationId = null;
+                }
             };
             window.addEventListener('beforeunload', saveState);
 
@@ -1428,12 +1657,18 @@
             } else {
                 await calculateTotalDuration();
             }
-
+            
+            // Restore state
             audio.playbackRate = initialState.speed || 1.0;
             audio.volume = initialState.volume !== undefined ? initialState.volume : 1.0;
             audio.muted = initialState.muted || false;
-            autoSpeedActive = initialState.autoSpeedActive || false;
-
+            
+            // Restore new auto-speed settings or use defaults
+            autoSpeedSettings = {
+                ...autoSpeedSettings, // keep defaults
+                ...(initialState.autoSpeedSettings || {}) // override with saved
+            };
+            
             const shouldAutoplay = initialState.wasPlaying || initialState.autoplay || false;
             const initialTime = initialState.time || (isSingleM4B ? playlistFiles[0].startTime : 0);
             
@@ -1460,6 +1695,10 @@
             clearInterval(saveInterval);
             saveInterval = null;
             stopAutoSpeed();
+            if (liveCountdownAnimationId) {
+                cancelAnimationFrame(liveCountdownAnimationId);
+                liveCountdownAnimationId = null;
+            }
             audio.pause();
             audio.src = '';
             playlistFiles.forEach(file => { if (file.url && !isSingleM4B) URL.revokeObjectURL(file.url); });
@@ -1474,6 +1713,8 @@
             dom.totalTimeInfo.textContent = '';
             currentTrackIndex = 0;
             dom.fileInput.value = '';
+            // Reset auto-speed to default
+            autoSpeedSettings = { isActive: false, intervalMins: 10, increment: 0.10, isWave: false, waveCounter: 0 };
         }
 
         function resetToUploadView() {
@@ -1540,7 +1781,7 @@
                 speed: audio.playbackRate,
                 volume: audio.volume,
                 muted: audio.muted,
-                autoSpeedActive: autoSpeedActive,
+                autoSpeedSettings: autoSpeedSettings, // Save the entire settings object
                 wasPlaying: !audio.paused && audio.src,
                 bookInfo: {
                     id: currentBookId,
@@ -1585,7 +1826,6 @@
 
         async function processFile(file) {
             try {
-                // Use the dynamically imported module 'mm'
                 const metadata = await mm.parseBlob(file.blob);
                 file.tags = metadata.common;
                 file.chapters = metadata.common.chapters;
@@ -1608,7 +1848,7 @@
         }
 
         function handleTrackMetadata() {
-            if (isSingleM4B) return; // M4B duration is handled in startPlayer
+            if (isSingleM4B) return; 
             const duration = audio.duration;
             dom.progressBar.max = duration;
             dom.totalDurationEl.textContent = formatTime(duration);
@@ -1635,17 +1875,17 @@
         };
 
         const handleAudioEnded = () => {
-            // For multi-file books, this is called on 'ended'. For M4B, it's called manually.
             if (isSingleM4B || currentTrackIndex >= playlistFiles.length - 1) {
                 showNotification("Audiobook finished!", "info");
                 setTimeout(goBackToUpload, 1000);
             } else {
-                playNext(); // For multi-file books, proceed to next track
+                playNext();
             }
         };
         
         const toggleMute = () => { audio.muted = !audio.muted; };
 
+        // Manual speed change
         function changeSpeed(increment) {
             let newSpeed = parseFloat((audio.playbackRate + increment).toFixed(2));
             newSpeed = Math.max(SPEED_MIN, Math.min(newSpeed, SPEED_MAX));
@@ -1653,21 +1893,73 @@
             updateSpeedUI();
             updateTotalTimeInfo();
         }
+        
+        // --- NEW/UPDATED AUTO-SPEED LOGIC ---
 
-        function toggleAutoSpeed() {
-            autoSpeedActive = !autoSpeedActive;
+        function openAutoSpeedModal() {
+            dom.autoSpeedIntervalInput.value = autoSpeedSettings.intervalMins;
+            dom.autoSpeedIncrementInput.value = autoSpeedSettings.increment.toFixed(2);
+            dom.autoSpeedWaveInput.checked = autoSpeedSettings.isWave;
+            dom.autoSpeedModal.classList.add('visible');
+        }
+
+        function handleSaveAutoSpeed() {
+            const interval = parseInt(dom.autoSpeedIntervalInput.value, 10);
+            const increment = parseFloat(dom.autoSpeedIncrementInput.value);
+
+            if (isNaN(interval) || interval < 1 || isNaN(increment) || increment < 0.01) {
+                showNotification("Please enter valid numbers for interval and increment.", "error");
+                return;
+            }
+
+            autoSpeedSettings.isActive = true;
+            autoSpeedSettings.intervalMins = interval;
+            autoSpeedSettings.increment = increment;
+            autoSpeedSettings.isWave = dom.autoSpeedWaveInput.checked;
+            // Do not reset waveCounter here, so it continues the cycle
+            
+            dom.autoSpeedModal.classList.remove('visible');
             updateSpeedUI();
-            if (autoSpeedActive && !audio.paused) startAutoSpeed();
-            else stopAutoSpeed();
             updateTotalTimeInfo();
+            if (!audio.paused) {
+                startAutoSpeed(); // Restart with new settings
+            }
+            saveState();
+            showNotification("Auto-speed settings saved and enabled.", "info");
+        }
+
+        function handleDisableAutoSpeed() {
+            autoSpeedSettings.isActive = false;
+            stopAutoSpeed();
+            dom.autoSpeedModal.classList.remove('visible');
+            updateSpeedUI();
+            updateTotalTimeInfo();
+            saveState();
+            showNotification("Auto-speed disabled.", "info");
         }
 
         function startAutoSpeed() {
-            stopAutoSpeed();
+            stopAutoSpeed(); // Ensure no multiple intervals are running
+            if (!autoSpeedSettings.isActive) return;
+
+            const intervalMs = autoSpeedSettings.intervalMins * 60 * 1000;
+            
             autoSpeedIntervalId = setInterval(() => {
-                changeSpeed(AUTO_SPEED_INCREMENT);
-                showNotification(`Speed increased to ${audio.playbackRate.toFixed(1)}x`, 'info');
-            }, AUTO_SPEED_INTERVAL_MS);
+                let speedChange = autoSpeedSettings.increment;
+                
+                if (autoSpeedSettings.isWave) {
+                    if (autoSpeedSettings.waveCounter % 3 === 2) {
+                        speedChange = -autoSpeedSettings.increment;
+                    }
+                    autoSpeedSettings.waveCounter++;
+                }
+
+                // Call the main changeSpeed function to apply the change
+                changeSpeed(speedChange); // This now correctly calls updateTotalTimeInfo
+                
+                showNotification(`Speed ${speedChange > 0 ? 'increased' : 'decreased'} to ${audio.playbackRate.toFixed(2)}x`, 'info');
+
+            }, intervalMs);
         }
 
         function stopAutoSpeed() {
@@ -1679,17 +1971,20 @@
 
         function updateSpeedUI() {
             const currentSpeed = audio.playbackRate;
-            dom.speedLabel.innerHTML = `${currentSpeed.toFixed(1)}x ${autoSpeedActive ? '<span class="auto-indicator">auto</span>' : ''}`;
+            dom.speedLabel.innerHTML = `${currentSpeed.toFixed(2)}x ${autoSpeedSettings.isActive ? '<span class="auto-indicator">auto</span>' : ''}`;
             dom.speedDownBtn.disabled = (currentSpeed.toFixed(2) <= SPEED_MIN);
             dom.speedUpBtn.disabled = (currentSpeed.toFixed(2) >= SPEED_MAX);
-            dom.autoSpeedBtn.classList.toggle('active', autoSpeedActive);
+            dom.autoSpeedBtn.classList.toggle('active', autoSpeedSettings.isActive);
         }
 
         function updateVolumeUI() {
-            dom.volumeSlider.value = audio.muted ? 0 : audio.volume;
-            if (audio.muted) dom.volumeBtn.innerHTML = volumeIcons.muted;
-            else if (audio.volume < 0.5) dom.volumeBtn.innerHTML = volumeIcons.low;
-            else dom.volumeBtn.innerHTML = volumeIcons.high;
+            const currentVolume = audio.muted ? 0 : audio.volume;
+            const icon = audio.muted ? volumeIcons.muted : (audio.volume < 0.5 ? volumeIcons.low : volumeIcons.high);
+            
+            dom.volumeSlider.value = currentVolume;
+            dom.volumeSliderMobile.value = currentVolume;
+            dom.volumeBtn.innerHTML = icon;
+            dom.volumeBtnMobile.innerHTML = icon;
         }
 
         function updateProgress() {
@@ -1713,8 +2008,6 @@
                     updatePlaylistUI();
                 }
             }
-
-            updateTotalTimeInfo();
         }
 
         function updateProgressTooltip(e) {
@@ -1728,7 +2021,7 @@
             dom.progressTooltip.style.left = `${x}px`;
         }
 
-        const setSeek = () => audio.currentTime = dom.progressBar.value;
+        const setSeek = () => {audio.currentTime = dom.progressBar.value; updateTotalTimeInfo();}
 
         function buildPlaylist() {
             dom.playlistEl.innerHTML = '';
@@ -1771,79 +2064,116 @@
         }
 
         function updateTotalTimeInfo() {
-            if (totalPlaylistDuration <= 0 || isNaN(audio.currentTime) || audio.playbackRate <= 0) {
+            // First, stop any animation that might be running to prevent conflicts.
+            if (liveCountdownAnimationId) {
+                cancelAnimationFrame(liveCountdownAnimationId);
+                liveCountdownAnimationId = null;
+            }
+
+            if (totalPlaylistDuration <= 0 || isNaN(audio.currentTime)) {
                 dom.totalTimeInfo.textContent = '';
                 return;
             }
 
-            // --- PART C: Total time at normal x1 speed ---
+            // --- PART C: Total time of the audiobook at 1x speed ---
             const totalNormalTime = totalPlaylistDuration;
 
-            // --- PART B: Total time it will take at the CURRENT speed ---
-            const totalAdjustedTime = totalNormalTime / audio.playbackRate;
+            // --- PART B: Total time to listen at the CURRENT speed (auto-speed NOT taken into account) ---
+            const totalTimeAtCurrentSpeed = (audio.playbackRate > 0) ? (totalNormalTime / audio.playbackRate) : 0;
 
             // --- PART A: Remaining time to listen (with auto-speed consideration) ---
-            // First, calculate how much content (at 1x speed) is left to play.
             let timeElapsedSoFar = 0;
             if (isSingleM4B) {
                 timeElapsedSoFar = audio.currentTime;
             } else {
                 for (let i = 0; i < currentTrackIndex; i++) {
-                    if (playlistFiles[i] && typeof playlistFiles[i].duration === 'number') {
-                        timeElapsedSoFar += playlistFiles[i].duration;
-                    }
+                    timeElapsedSoFar += (playlistFiles[i]?.duration || 0);
                 }
                 timeElapsedSoFar += audio.currentTime;
             }
             const remainingSecondsNormal = totalNormalTime - timeElapsedSoFar;
-
-            let remainingTimeAdjusted;
-            if (autoSpeedActive) {
-                // Use the predictive function if auto-speed is on
-                remainingTimeAdjusted = calculateAutoSpeedAdjustedTime(remainingSecondsNormal, audio.playbackRate);
-            } else {
-                // Otherwise, a simple division is enough
-                remainingTimeAdjusted = remainingSecondsNormal / audio.playbackRate;
-            }
-            // Ensure time doesn't go below zero
-            remainingTimeAdjusted = Math.max(0, remainingTimeAdjusted);
             
-            // --- Format and Display A/B/C ---
-            const formattedA = formatTime(remainingTimeAdjusted, true);
-            const formattedB = formatTime(totalAdjustedTime, true);
-            const formattedC = formatTime(totalNormalTime, true);
+            // This calculates the final, real-world time it will take to finish.
+            const remainingTimeWithAutoSpeed = predictListeningTime(remainingSecondsNormal, audio.playbackRate, autoSpeedSettings);
+            
+            // --- Set the starting values for the new countdown animation ---
+            liveCountdownStartValue = remainingTimeWithAutoSpeed;
+            liveCountdownStartTime = performance.now();
 
+            // Set the initial full display text (Parts A, B, and C). This happens only once per call.
+            const formattedA = formatTime(remainingTimeWithAutoSpeed, true);
+            const formattedB = formatTime(totalTimeAtCurrentSpeed, true);
+            const formattedC = formatTime(totalNormalTime, true);
             dom.totalTimeInfo.innerHTML = `<strong>${formattedA}</strong> / ${formattedB} / ${formattedC}`;
+
+            // Start the smooth visual countdown ONLY if the audio is actually playing.
+            if (!audio.paused) {
+                 liveCountdownAnimationId = requestAnimationFrame(tick);
+            }
         }
 
         /**
-         * Predicts the total listening time remaining, accounting for future speed increases
-         * from the auto-speed feature.
-         * @param {number} remainingSeconds - The amount of audio content left at 1.0x speed.
-         * @param {number} currentSpeed - The current playback rate.
-         * @returns {number} The predicted total time in seconds to finish the remaining audio.
+         * Predicts the total listening time required for a given amount of audio content,
+         * accounting for the complete auto-speed schedule (linear or wave).
+         * @param {number} secondsOfContent - The amount of audio content (at 1.0x speed) to process.
+         * @param {number} startingSpeed - The playback rate at the beginning of the prediction.
+         * @param {object} settings - The autoSpeedSettings object.
+         * @returns {number} The predicted total time in seconds to listen to the content.
          */
-        function calculateAutoSpeedAdjustedTime(remainingSeconds, currentSpeed) {
-            let totalAdjustedTime = 0;
-            let speed = currentSpeed;
-            let secondsLeftToProcess = remainingSeconds;
-            const autoSpeedIntervalSeconds = AUTO_SPEED_INTERVAL_MS / 1000;
+        function predictListeningTime(secondsOfContent, startingSpeed, settings) {
+            if (!settings.isActive) {
+                return secondsOfContent / startingSpeed;
+            }
 
-            while (secondsLeftToProcess > 0 && speed < SPEED_MAX) {
-                const contentInNextInterval = autoSpeedIntervalSeconds * speed;
-                if (secondsLeftToProcess <= contentInNextInterval) {
+            let totalAdjustedTime = 0;
+            let speed = startingSpeed;
+            let secondsLeftToProcess = secondsOfContent;
+            let waveCounter = settings.waveCounter; // Use a local copy for prediction
+            const intervalSeconds = settings.intervalMins * 60;
+
+            while (secondsLeftToProcess > 0) {
+                const contentCoveredInInterval = intervalSeconds * speed;
+                
+                if (secondsLeftToProcess <= contentCoveredInInterval) {
+                    // This is the last interval
                     totalAdjustedTime += secondsLeftToProcess / speed;
                     secondsLeftToProcess = 0;
                 } else {
-                    totalAdjustedTime += autoSpeedIntervalSeconds;
-                    secondsLeftToProcess -= contentInNextInterval;
-                    speed = parseFloat((speed + AUTO_SPEED_INCREMENT).toFixed(2));
+                    // A full interval passes
+                    totalAdjustedTime += intervalSeconds;
+                    secondsLeftToProcess -= contentCoveredInInterval;
+                    
+                    // Predict speed for the next interval
+                    let speedChange = settings.increment;
+                    if (settings.isWave) {
+                        if (waveCounter % 3 === 2) { // Decrease step
+                            speedChange = -settings.increment;
+                        }
+                        waveCounter++;
+                    }
+                    speed = Math.max(SPEED_MIN, Math.min(SPEED_MAX, speed + speedChange));
                 }
             }
-            if (secondsLeftToProcess > 0) {
-                 totalAdjustedTime += secondsLeftToProcess / SPEED_MAX;
+            return Math.max(0, totalAdjustedTime);
+        }
+
+        function tick() {
+            // How much real-world time has passed since the countdown started.
+            const elapsedRealSeconds = (performance.now() - liveCountdownStartTime) / 1000;
+
+            // The value returned by predictListeningTime is already the final real-world duration.
+            // We just need to subtract the real elapsed time from it.
+            // This was the primary source of the bug.
+            const currentDisplayTime = Math.max(0, liveCountdownStartValue - elapsedRealSeconds);
+
+            // Update only the leftmost time value (A) in the DOM for a smooth countdown.
+            const strongEl = dom.totalTimeInfo.querySelector('strong');
+            if (strongEl) {
+                strongEl.textContent = formatTime(currentDisplayTime, true);
             }
-            return totalAdjustedTime;
+            
+            // Continue the animation loop.
+            liveCountdownAnimationId = requestAnimationFrame(tick);
         }
 
         function updatePlaylistUI() {
@@ -1977,7 +2307,8 @@
 
         // --- KEYBOARD SHORTCUTS ---
         function handleKeyboardShortcuts(e) {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+            // Do not trigger shortcuts if a modal is open or an input is focused
+            if (document.querySelector('.modal-overlay.visible') || e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
             switch (e.key) {
                 case ' ':
                     e.preventDefault();
