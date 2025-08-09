@@ -1831,7 +1831,7 @@
                 file.chapters = metadata.common.chapters;
                 file.title = metadata.common.title || file.name.replace(/\.[^/.]+$/, "");
                 if (metadata.common.picture && metadata.common.picture.length > 0) {
-                    const picture = metadata.common.picture[0];
+                    const picture = metadata.common.picture[metadata.common.picture.length-1];
                     const blob = new Blob([picture.data], { type: picture.format });
                     file.artwork = await new Promise((resolve, reject) => {
                         const reader = new FileReader();
